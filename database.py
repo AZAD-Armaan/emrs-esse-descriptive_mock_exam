@@ -4,8 +4,12 @@ from datetime import datetime
 from contextlib import contextmanager
 
 # ─── Pick database based on environment ───────────────────────────
-DATABASE_URL = os.getenv("DATABASE_URL", "")
-USE_POSTGRES = DATABASE_URL.startswith("postgresql") or DATABASE_URL.startswith("postgres")
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+# Only use Postgres if URL is non-empty AND looks like a valid postgres URL
+USE_POSTGRES = bool(DATABASE_URL) and (
+    DATABASE_URL.startswith("postgresql://") or
+    DATABASE_URL.startswith("postgres://")
+) and len(DATABASE_URL) > 20
 
 # ══════════════════════════════════════════════════════════════════
 #  CONNECTION HELPERS
@@ -15,7 +19,7 @@ def get_db():
     if USE_POSTGRES:
         import psycopg2
         import psycopg2.extras
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(DATABASE_URL, sslmode="require")
         conn.autocommit = False
         try:
             yield conn
