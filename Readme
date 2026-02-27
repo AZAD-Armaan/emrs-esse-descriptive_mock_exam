@@ -1,0 +1,147 @@
+# 📚 EMRS ESSE Exam Portal
+### TGT/PGT Computer Science — AI-Powered Descriptive Answer Evaluation
+
+A multi-user online exam platform built with Streamlit, Google OAuth, SQLite, and Gemini AI for automatic answer evaluation and ranking.
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---|---|
+| 🔐 Google Login | Students & admin log in via Google OAuth |
+| 📝 Exam Interface | 4 descriptive questions per session |
+| 🤖 AI Evaluation | Gemini 1.5 Flash evaluates answers out of 4 marks |
+| 🏆 Live Rankings | Auto-updated leaderboard with ranks |
+| ⚙️ Admin Panel | Create sessions, add questions, trigger evaluation |
+| 📥 Export | Download all submissions as CSV |
+
+---
+
+## 🚀 Setup Guide (Step by Step)
+
+### Step 1: Clone / Download Project
+```bash
+# Place all files in a folder, e.g., emrs_exam_app/
+cd emrs_exam_app
+```
+
+### Step 2: Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### Step 3: Get Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project (or use existing)
+3. Go to **APIs & Services → OAuth consent screen**
+   - User Type: **External**
+   - Fill in App name, email
+   - Add scope: `email`, `profile`, `openid`
+   - Add your email as a **Test User**
+4. Go to **APIs & Services → Credentials → Create Credentials → OAuth Client ID**
+   - Application type: **Web Application**
+   - Name: EMRS Exam Portal
+   - Authorized redirect URIs:
+     - `http://localhost:8501` (for local)
+     - `https://your-production-url.com` (for deployment)
+5. Copy **Client ID** and **Client Secret**
+
+### Step 4: Get Gemini API Key
+
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Click **Create API Key**
+3. Copy the key
+
+### Step 5: Configure .env File
+```bash
+cp .env.example .env
+# Edit .env with your actual keys
+```
+
+`.env` file:
+```
+GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=xxxxx
+REDIRECT_URI=http://localhost:8501
+GEMINI_API_KEY=AIzaSy_xxxxx
+ADMIN_EMAILS=youremail@gmail.com
+```
+
+### Step 6: Run the App
+```bash
+streamlit run app.py
+```
+Open → http://localhost:8501
+
+---
+
+## 👤 Admin Workflow
+
+1. **Login** with your Google account (your email must be in `ADMIN_EMAILS`)
+2. Go to **Admin Panel → Sessions** tab → Create a session
+3. Go to **Questions** tab → Add 4 questions with marks
+4. Share the portal URL with students
+5. When students finish → Go to **Evaluate** tab → Click **Evaluate All**
+6. View **Rankings** for the leaderboard
+
+## 🎓 Student Workflow
+
+1. Open the portal URL → **Sign in with Google**
+2. Go to **Exam** tab → Write answers → Submit
+3. Wait for admin to trigger evaluation
+4. View scores in **My Results** and rank in **Rankings**
+
+---
+
+## 🌐 Deploy to Cloud (Streamlit Community Cloud)
+
+1. Push code to GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Connect your GitHub repo
+4. In **Advanced Settings → Secrets**, add all `.env` values in TOML format:
+   ```toml
+   GOOGLE_CLIENT_ID = "xxx"
+   GOOGLE_CLIENT_SECRET = "xxx"
+   REDIRECT_URI = "https://your-app.streamlit.app"
+   GEMINI_API_KEY = "xxx"
+   ADMIN_EMAILS = "you@gmail.com"
+   ```
+5. Update the Authorized Redirect URI in Google Cloud Console to your Streamlit URL
+6. ⚠️ Remove `os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"` from app.py (HTTPS is secure)
+
+---
+
+## 📁 Project Structure
+
+```
+emrs_exam_app/
+├── app.py           # Main Streamlit application
+├── database.py      # SQLite database operations
+├── evaluator.py     # Gemini AI evaluation logic
+├── requirements.txt # Python dependencies
+├── .env.example     # Environment variables template
+├── .env             # Your actual secrets (never commit this!)
+└── README.md        # This file
+```
+
+---
+
+## 🔧 Customization
+
+**Change evaluation prompt** → Edit `evaluator.py`, the `prompt` string in `evaluate_answer()`
+
+**Add more questions** → The admin panel supports unlimited questions per session
+
+**Change scoring** → Each question's marks can be set individually (default: 4)
+
+**Multiple sessions** → You can run multiple exam sessions and view each one's rankings separately
+
+---
+
+## ⚠️ Important Notes
+
+- The SQLite database (`emrs_exam.db`) is created automatically on first run
+- On Streamlit Cloud, the database resets on each deployment — use a persistent DB like [Supabase](https://supabase.com) for production
+- For production, use HTTPS and remove the `OAUTHLIB_INSECURE_TRANSPORT` line
